@@ -49,6 +49,6 @@ if __name__ == "__main__":
     print("AffectNet {} set loaded".format(split))
     print("{} samples".format(len(affectnet_train)))
 
-    for i in range(3):
+    for i in range(1):
         print(affectnet_train[i]["label"])
         affectnet_train[i]["image"].show()
