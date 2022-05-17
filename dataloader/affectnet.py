@@ -11,11 +11,17 @@ class AffectNet(data.Dataset):
 
         # TODO: implementare il caricamento del CSV e settare la cartella dove sono presenti i file audio in self.audios
         if self.split == "train":
-            self.data = pd.read_csv("../csv/train_set-csv_completo.CSV")
+            colnames = ['image_path', 'emotion_class', 'Valenza', 'Arousal']
+            self.data = pd.read_csv("../csv/train_set-csv_completo.CSV",  sep=";")
             self.images = "C:/Dataset AffectNet/train_set/images"
+            print(self.data.columns.tolist())
+            print(self.data)
         elif self.split == "val":
-            self.data = pd.read_csv("../csv/val_set-csv_completo.csv")
+            colnames = ['image_path', 'emotion_class', 'Valenza', 'Arousal']
+            self.data = pd.read_csv("../csv/val_set-csv_completo.csv" ,   sep=";")
             self.images = "C:/Dataset AffectNet/val_set/images"
+            print(self.data.columns.tolist())
+            print(self.data)
 
     def __len__(self):
         return len(self.data)
