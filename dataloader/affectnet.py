@@ -14,7 +14,7 @@ class AffectNet(data.Dataset):
             self.data = pd.read_csv("../csv/train_set-csv_completo.CSV",  sep=";")
             self.images = "C:/Dataset AffectNet/train_set/images"
         elif self.split == "val":
-            self.data = pd.read_csv("../csv/val_set-csv_completo.csv" ,   sep=";")
+            self.data = pd.read_csv("../csv/val_set-csv_completo.csv" ,   sep=";" )
             self.images = "C:/Dataset AffectNet/val_set/images"
 
     def __len__(self):
