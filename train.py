@@ -14,6 +14,7 @@ from models.cbam.vggface2_cbam import VGGFace2CBAM
 from dataloader.demos import Demos
 from dataloader.emovo import Emovo
 from dataloader.demosemovo import DemosEmovo
+from dataloader.affectnet import AffectNet
 
 
 parser = argparse.ArgumentParser(description="Configuration train phase")
@@ -26,7 +27,7 @@ parser.add_argument("-p", "--patience", type=int, default=10, help='Number of ep
 parser.add_argument("-wd", "--weight_decay", type=float, default=0, help='Value of weight decay')
 parser.add_argument("-nm", "--momentum", type=float, default=0, help='Value of momentum')
 parser.add_argument("-m", "--monitor", type=str, default="acc", choices=["acc", "loss"], help='Chose to monitor the validation accuracy or loss')
-parser.add_argument("-d", "--dataset", type=str, default="demos", choices=["demos", "emovo", "demosemovo"], help='Chose the dataset')
+parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["affectnet"], help='Chose the dataset')
 parser.add_argument("-cw", "--class_weights", type=bool, default=False, help='Use the class weights in loss function')
 parser.add_argument("-s", "--stats", type=str, default="no", choices=["no", "imagenet"], help='Chose the mean and standard deviation')
 args = parser.parse_args()
@@ -80,22 +81,27 @@ if args.dataset == "demos":
     train_data = Demos(split="train", transform=train_preprocess)
     val_data = Demos(split="val", transform=val_preprocess)
     # TODO: verificare che il numero di classi sia corretto
-    classes = 7
+    classes = 8
 elif args.dataset == "emovo":
     train_data = Emovo(split="train", transform=train_preprocess)
     val_data = Emovo(split="val", transform=val_preprocess)
     # TODO: verificare che il numero di classi sia corretto
-    classes = 7
+    classes = 8
 elif args.dataset == "demosemovo":
     train_data = DemosEmovo(split="train", transform=train_preprocess)
     val_data = DemosEmovo(split="val", transform=val_preprocess)
     # TODO: verificare che il numero di classi sia corretto
-    classes = 7
-else:
-    train_data = Demos(split="train", transform=train_preprocess)
-    val_data = Demos(split="val", transform=val_preprocess)
+    classes = 8
+elif args.dataset == "affectnet":
+    train_data = AffectNet(split="train", transform=train_preprocess)
+    val_data = AffectNet(split="val", transform=val_preprocess)
     # TODO: verificare che il numero di classi sia corretto
-    classes = 7
+    classes = 8
+else:
+    train_data = AffectNet(split="train", transform=train_preprocess)
+    val_data = AffectNet(split="val", transform=val_preprocess)
+    # TODO: verificare che il numero di classi sia corretto
+    classes = 8
 
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=4)

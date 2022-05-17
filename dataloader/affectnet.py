@@ -11,22 +11,22 @@ class AffectNet(data.Dataset):
 
         # TODO: implementare il caricamento del CSV e settare la cartella dove sono presenti i file audio in self.audios
         if self.split == "train":
-            self.data = pd.read_csv("")
-            self.images = ""
+            self.data = pd.read_csv("../csv/train_set-csv_completo.CSV")
+            self.images = "C:/Dataset AffectNet/train_set/images"
         elif self.split == "val":
-            self.data = pd.read_csv("")
-            self.images = ""
+            self.data = pd.read_csv("../csv/val_set-csv_completo.csv")
+            self.images = "C:/Dataset AffectNet/val_set/images"
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         # TODO: leggere la label associata al file img nel CSV
-        label = self.data.loc[idx, "emotion"]
+        label = self.data.loc[idx, "emotion_class"]
         label = int(label)
 
         # TODO: leggere il percorso del file img dal CSV
-        img_name = self.data.loc[idx, "audio_path"]
+        img_name = self.data.loc[idx, "image_path"]
 
         # TODO: caricare l'immagine con PIL
         img = Image.open(img_name)
