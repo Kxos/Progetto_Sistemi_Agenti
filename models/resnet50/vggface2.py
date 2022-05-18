@@ -7,8 +7,9 @@ import models.resnet50.model.resnet50_ft_dims_2048 as model
 
 class VGGFace2(nn.Module):
 
-    def __init__(self, pretrained=True, classes=7):
+    def __init__(self, pretrained=True, classes=8):
         super().__init__()
+        self.classes = classes
 
         if pretrained is True:
             # load weights
