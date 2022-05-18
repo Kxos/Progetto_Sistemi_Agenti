@@ -230,7 +230,7 @@ if __name__ == '__main__':
         # TODO in caso regressione no print di train acc / val acc (if)
         if format(args.target) == 'emotion_class':
             if is_best:
-                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
+                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accura cy{:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
             else:
                 outputTrain ='\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}%'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
         else:
