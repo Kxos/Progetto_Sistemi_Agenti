@@ -16,22 +16,26 @@ from dataloader.emovo import Emovo
 from dataloader.demosemovo import DemosEmovo
 from dataloader.affectnet import AffectNet
 
-
 parser = argparse.ArgumentParser(description="Configuration train phase")
-parser.add_argument("-a", "--attention", type=str, default="no", choices=["no", "se", "bam", "cbam"], help='Chose the attention module')
+parser.add_argument("-a", "--attention", type=str, default="no", choices=["no", "se", "bam", "cbam"],
+                    help='Chose the attention module')
 parser.add_argument("-bs", "--batch_size", type=int, default=64, help='Batch size to use for training')
 parser.add_argument("-o", "--optimizer", type=str, default="adam", choices=["adam", "sgd"], help='Chose the optimizer')
 parser.add_argument("-lr", "--learning_rate", type=float, default=0.001, help='Learning rate to use for training')
 parser.add_argument("-e", "--epochs", type=int, default=100, help='Number of epochs')
-parser.add_argument("-p", "--patience", type=int, default=10, help='Number of epochs without improvements before reducing the learning rate')
+parser.add_argument("-p", "--patience", type=int, default=10,
+                    help='Number of epochs without improvements before reducing the learning rate')
 parser.add_argument("-wd", "--weight_decay", type=float, default=0, help='Value of weight decay')
 parser.add_argument("-nm", "--momentum", type=float, default=0, help='Value of momentum')
-parser.add_argument("-m", "--monitor", type=str, default="acc", choices=["acc", "loss"], help='Chose to monitor the validation accuracy or loss')
+parser.add_argument("-m", "--monitor", type=str, default="acc", choices=["acc", "loss"],
+                    help='Chose to monitor the validation accuracy or loss')
 parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["affectnet"], help='Chose the dataset')
 parser.add_argument("-cw", "--class_weights", type=bool, default=False, help='Use the class weights in loss function')
-parser.add_argument("-s", "--stats", type=str, default="imagenet", choices=["no", "imagenet"], help='Chose the mean and standard deviation')
+parser.add_argument("-s", "--stats", type=str, default="imagenet", choices=["no", "imagenet"],
+                    help='Chose the mean and standard deviation')
 # TODO aggiungere parametro 'target'
-parser.add_argument("-ta", "--target", type=str, default="emotion_class", choices=["emotion_class", "Valenza", "Arousal"], help='Select the type of target')
+parser.add_argument("-ta", "--target", type=str, default="emotion_class",
+                    choices=["emotion_class", "Valenza", "Arousal"], help='Select the type of target')
 
 args = parser.parse_args()
 
@@ -48,6 +52,7 @@ print("Class weights: {}".format(args.class_weights))
 print("Metric to monitor: {}".format(args.monitor))
 print("Dataset: {}".format(args.dataset))
 print("Stats: {}".format(args.stats))
+print("Target: {}".format(args.target))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -128,8 +133,10 @@ best_val_loss = 1000000
 best_val_acc = 0
 
 # TODO if sul target per la classificazione (classe / valenza arousal)
-# criterion = nn.MSELoss()
-criterion = nn.CrossEntropyLoss()
+if format(args.target) == 'emotion_class':
+    criterion = nn.CrossEntropyLoss()
+else:
+    criterion = nn.MSELoss()
 
 if args.optimizer == "sgd":
     optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.learning_rate,
@@ -165,15 +172,17 @@ for e in range(start_epoch, args.epochs):
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
-        #TODO rimuovere 167 - 168 in caso di regressione (if)
 
-        _, preds = torch.max(outputs, 1)
-        train_correct += torch.sum(preds == labels.data)
+        if format(args.target) == 'emotion_class':
+            _, preds = torch.max(outputs, 1)
+            train_correct += torch.sum(preds == labels.data)
+
         batch_bar.update(1)
 
     train_loss = train_loss / len(train_loader)
-    # TODO rimuovere 173 in caso di regressione (if)
-    train_acc = train_correct.double() / len(train_data)
+
+    if format(args.target) == 'emotion_class':
+        train_acc = train_correct.double() / len(train_data)
 
     # validate the model
     model.eval()
@@ -184,13 +193,13 @@ for e in range(start_epoch, args.epochs):
             val_outputs = model(images)
             val_loss = criterion(val_outputs, labels)
             validation_loss += val_loss.item()
-            # TODO rimuovere 185- 186 in caso di regressione (if)
-            _, val_preds = torch.max(val_outputs, 1)
-            val_correct += torch.sum(val_preds == labels.data)
+            if format(args.target) == 'emotion_class':
+                _, val_preds = torch.max(val_outputs, 1)
+                val_correct += torch.sum(val_preds == labels.data)
 
     validation_loss = validation_loss / len(val_loader)
-    # TODO rimuovere 189 in caso di regressione (if)
-    val_acc = val_correct.double() / len(val_data)
+    if format(args.target) == 'emotion_class':
+        val_acc = val_correct.double() / len(val_data)
 
     if args.monitor == "loss":
         scheduler.step(validation_loss)
@@ -212,17 +221,21 @@ for e in range(start_epoch, args.epochs):
         'scheduler': scheduler.state_dict()
     }
     # TODO Creare cartella result per il save
-    save_checkpoint(checkpoint, is_best, "../result/{}/checkpoint".format(args.attention), "../result/{}".format(args.attention))
-
+    save_checkpoint(checkpoint, is_best, "../result/{}/checkpoint".format(args.attention),
+                    "../result/{}".format(args.attention))
 
     # TODO in caso regressione no print di train acc / val acc (if)
-    if is_best:
-        print(
-            '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'
-            .format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100))
+    if format(args.target) == 'emotion_class':
+        if is_best:
+            outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
+        else:
+            outputTrain ='\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}%'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
     else:
-        print(
-            '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}%'
-            .format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100))
+        if is_best:
+            outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \t[saved]'.format(e + 1, train_loss, validation_loss)
+        else:
+            outputTrain ='\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f}'.format(e + 1, train_loss, validation_loss)
+
+    print(outputTrain)
 
 print("===================================Training Finished===================================")
