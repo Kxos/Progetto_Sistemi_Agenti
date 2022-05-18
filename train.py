@@ -31,6 +31,8 @@ parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["
 parser.add_argument("-cw", "--class_weights", type=bool, default=False, help='Use the class weights in loss function')
 parser.add_argument("-s", "--stats", type=str, default="imagenet", choices=["no", "imagenet"], help='Chose the mean and standard deviation')
 # TODO aggiungere parametro 'target'
+parser.add_argument("-ta", "--target", type=str, default="emotion_class", choices=["emotion_class", "Valenza", "Arousal"], help='Select the type of target')
+
 args = parser.parse_args()
 
 print("Starting training with the following configuration:")
@@ -164,6 +166,7 @@ for e in range(start_epoch, args.epochs):
         optimizer.step()
         train_loss += loss.item()
         #TODO rimuovere 167 - 168 in caso di regressione (if)
+
         _, preds = torch.max(outputs, 1)
         train_correct += torch.sum(preds == labels.data)
         batch_bar.update(1)
