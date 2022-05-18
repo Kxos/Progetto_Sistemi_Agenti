@@ -5,24 +5,31 @@ from PIL import Image
 
 class AffectNet(data.Dataset):
 
-    def __init__(self, split='train', transform=None):
+    def __init__(self, split='train', transform=None, target='emotion_class'):
         self.transform = transform
         self.split = split
+        self.target = target
 
-        # TODO: implementare il caricamento del CSV e settare la cartella dove sono presenti i file audio in self.audios
+        # TODO: implementare il caricamento del CSV e settare la cartella dove sono presenti i file image in self.images
         if self.split == "train":
-            self.data = pd.read_csv("../csv/train_set-csv_completo.CSV",  sep=";")
+            self.data = pd.read_csv("../csv/train_set-csv_completo.CSV", sep=";")
             self.images = "C:/Dataset AffectNet/train_set/images"
+            print("Train Set: ")
+            print(self.data.columns.tolist())
+            print(self.data)
         elif self.split == "val":
-            self.data = pd.read_csv("../csv/val_set-csv_completo.csv" ,   sep=";" )
+            self.data = pd.read_csv("../csv/val_set-csv_completo.csv", sep=";")
             self.images = "C:/Dataset AffectNet/val_set/images"
+            print("Validation Set: ")
+            print(self.data.columns.tolist())
+            print(self.data)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         # TODO: leggere la label associata al file img nel CSV
-        label = self.data.loc[idx, "emotion_class"]
+        label = self.data.loc[idx, self.target]
         label = int(label)
 
         # TODO: leggere il percorso del file img dal CSV

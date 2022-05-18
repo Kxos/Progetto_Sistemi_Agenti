@@ -1,4 +1,4 @@
-image_path;expression_class;Valenza;Arousal
+image_path;emotion_class;Valenza;Arousal
 C:/Dataset AffectNet/val_set/images/0.jpg;0;-0.176846;-0.0776398
 C:/Dataset AffectNet/val_set/images/1.jpg;0;-0.367789;0.183895
 C:/Dataset AffectNet/val_set/images/2.jpg;4;-0.0629113;0.532327

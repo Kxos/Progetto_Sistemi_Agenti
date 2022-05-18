@@ -29,7 +29,8 @@ parser.add_argument("-nm", "--momentum", type=float, default=0, help='Value of m
 parser.add_argument("-m", "--monitor", type=str, default="acc", choices=["acc", "loss"], help='Chose to monitor the validation accuracy or loss')
 parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["affectnet"], help='Chose the dataset')
 parser.add_argument("-cw", "--class_weights", type=bool, default=False, help='Use the class weights in loss function')
-parser.add_argument("-s", "--stats", type=str, default="no", choices=["no", "imagenet"], help='Chose the mean and standard deviation')
+parser.add_argument("-s", "--stats", type=str, default="imagenet", choices=["no", "imagenet"], help='Chose the mean and standard deviation')
+# TODO aggiungere parametro 'target'
 args = parser.parse_args()
 
 print("Starting training with the following configuration:")
@@ -124,6 +125,8 @@ start_epoch = 0
 best_val_loss = 1000000
 best_val_acc = 0
 
+# TODO if sul target per la classificazione (classe / valenza arousal)
+# criterion = nn.MSELoss()
 criterion = nn.CrossEntropyLoss()
 
 if args.optimizer == "sgd":
@@ -160,11 +163,13 @@ for e in range(start_epoch, args.epochs):
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
+        #TODO rimuovere 167 - 168 in caso di regressione (if)
         _, preds = torch.max(outputs, 1)
         train_correct += torch.sum(preds == labels.data)
         batch_bar.update(1)
 
     train_loss = train_loss / len(train_loader)
+    # TODO rimuovere 173 in caso di regressione (if)
     train_acc = train_correct.double() / len(train_data)
 
     # validate the model
@@ -176,10 +181,12 @@ for e in range(start_epoch, args.epochs):
             val_outputs = model(images)
             val_loss = criterion(val_outputs, labels)
             validation_loss += val_loss.item()
+            # TODO rimuovere 185- 186 in caso di regressione (if)
             _, val_preds = torch.max(val_outputs, 1)
             val_correct += torch.sum(val_preds == labels.data)
 
     validation_loss = validation_loss / len(val_loader)
+    # TODO rimuovere 189 in caso di regressione (if)
     val_acc = val_correct.double() / len(val_data)
 
     if args.monitor == "loss":
@@ -201,8 +208,11 @@ for e in range(start_epoch, args.epochs):
         'optimizer': optimizer.state_dict(),
         'scheduler': scheduler.state_dict()
     }
+    # TODO Creare cartella result per il save
     save_checkpoint(checkpoint, is_best, "../result/{}/checkpoint".format(args.attention), "../result/{}".format(args.attention))
 
+
+    # TODO in caso regressione no print di train acc / val acc (if)
     if is_best:
         print(
             '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'
