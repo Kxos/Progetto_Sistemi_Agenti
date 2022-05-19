@@ -13,13 +13,13 @@ class AffectNet(data.Dataset):
         # TODO: implementare il caricamento del CSV e settare la cartella dove sono presenti i file image in self.images
         if self.split == "train":
             self.data = pd.read_csv("csv/train_set-csv_completo.CSV", sep=";")
-            self.images = "/content/train_set/images"
+            self.images = "/content/train_set_images"
             print("Train Set: ")
             print(self.data.columns.tolist())
             print(self.data)
         elif self.split == "val":
             self.data = pd.read_csv("csv/val_set-csv_completo.csv", sep=";")
-            self.images = "/content/val_set/images"
+            self.images = "/content/val_set_images"
             print("Validation Set: ")
             print(self.data.columns.tolist())
             print(self.data)
