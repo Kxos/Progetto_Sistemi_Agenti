@@ -24,7 +24,8 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--attention", type=str, default="no", choices=["no", "se", "bam", "cbam"],
                         help='Chose the attention module')
     parser.add_argument("-bs", "--batch_size", type=int, default=64, help='Batch size to use for training')
-    parser.add_argument("-o", "--optimizer", type=str, default="adam", choices=["adam", "sgd"], help='Chose the optimizer')
+    parser.add_argument("-o", "--optimizer", type=str, default="adam", choices=["adam", "sgd"],
+                        help='Chose the optimizer')
     parser.add_argument("-lr", "--learning_rate", type=float, default=0.001, help='Learning rate to use for training')
     parser.add_argument("-e", "--epochs", type=int, default=100, help='Number of epochs')
     parser.add_argument("-p", "--patience", type=int, default=10,
@@ -33,13 +34,16 @@ if __name__ == '__main__':
     parser.add_argument("-nm", "--momentum", type=float, default=0, help='Value of momentum')
     parser.add_argument("-m", "--monitor", type=str, default="acc", choices=["acc", "loss"],
                         help='Chose to monitor the validation accuracy or loss')
-    parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["affectnet"], help='Chose the dataset')
-    parser.add_argument("-cw", "--class_weights", type=bool, default=False, help='Use the class weights in loss function')
+    parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["affectnet"],
+                        help='Chose the dataset')
+    parser.add_argument("-cw", "--class_weights", type=bool, default=False,
+                        help='Use the class weights in loss function')
     parser.add_argument("-s", "--stats", type=str, default="imagenet", choices=["no", "imagenet"],
                         help='Chose the mean and standard deviation')
     # TODO aggiungere parametro 'target'
     parser.add_argument("-ta", "--target", type=str, default="emotion_class",
                         choices=["emotion_class", "Valenza", "Arousal"], help='Select the type of target')
+    parser.add_argument("-bk", "--execute_backup", type=str, default="", help='Backup the result folder of checkpoints')
 
     args = parser.parse_args()
 
@@ -227,17 +231,28 @@ if __name__ == '__main__':
         save_checkpoint(checkpoint, is_best, "../result/{}/checkpoint".format(args.attention),
                         "../result/{}".format(args.attention))
 
+        # TODO Salvare su Drive la cartella dei checkpoint e il best_model
+        try:
+            exec(args.execute_backup)
+        except Exception as e:
+            print(f"Unable to execute program: {args.execute_backup}")
+
         # TODO in caso regressione no print di train acc / val acc (if)
         if format(args.target) == 'emotion_class':
             if is_best:
-                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accura cy{:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
+                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}% \t[saved]'.format(
+                    e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
             else:
-                outputTrain ='\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}%'.format(e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
+                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \tTraining Accuracy {:.3f}% \tValidation Accuracy {:.3f}%'.format(
+                    e + 1, train_loss, validation_loss, train_acc * 100, val_acc * 100)
         else:
             if is_best:
-                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \t[saved]'.format(e + 1, train_loss, validation_loss)
+                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f} \t[saved]'.format(e + 1,
+                                                                                                              train_loss,
+                                                                                                              validation_loss)
             else:
-                outputTrain ='\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f}'.format(e + 1, train_loss, validation_loss)
+                outputTrain = '\nEpoch: {} \tTraining Loss: {:.8f} \tValidation Loss {:.8f}'.format(e + 1, train_loss,
+                                                                                                    validation_loss)
 
         print(outputTrain)
 
