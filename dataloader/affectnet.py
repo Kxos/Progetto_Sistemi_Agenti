@@ -22,7 +22,7 @@ class AffectNet(data.Dataset):
             self.images = "/content/val_set_images"
             print("Validation Set: ")
             print(self.data.columns.tolist())
-            print(self.data)
+            print(self.data) 
 
     def __len__(self):
         return len(self.data)
