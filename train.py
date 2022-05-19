@@ -1,7 +1,9 @@
 import argparse
+import os.path
 from multiprocessing import freeze_support
 
 import torch
+import os
 from torchvision import transforms
 import torch.nn as nn
 import torch.optim as optim
@@ -156,6 +158,12 @@ if __name__ == '__main__':
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, verbose=True)
     else:
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=args.patience, mode="max", verbose=True)
+
+    # TODO - Verifica con il Load Checkpoint se bisogna continuare da una sessione di Training precedente
+    checkpoint_path = "../result/{}/checkpoint".format(args.attention)+"/checkpoint.pt"
+    if os.path.exists(checkpoint_path):
+        model = load_model(checkpoint_path, model, device)
+        model, optimizer, scheduler, start_epoch = load_checkpoint(checkpoint_path, model, optimizer, scheduler)
 
     print("===================================Start Training===================================")
 
