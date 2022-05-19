@@ -30,6 +30,8 @@ class AffectNet(data.Dataset):
     def __getitem__(self, idx):
         # TODO: leggere la label associata al file img nel CSV
         label = self.data.loc[idx, self.target]
+
+        # TODO - se target è Valenza od Arousal NON eseguire la conversione int(label)
         label = int(label)
 
         # TODO: leggere il percorso del file img dal CSV
