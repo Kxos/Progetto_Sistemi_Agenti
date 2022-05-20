@@ -7,6 +7,7 @@ import os
 from torchvision import transforms
 import torch.nn as nn
 import torch.optim as optim
+import multiprocessing as mp
 import itertools
 from tqdm import tqdm, notebook
 import numpy as np
@@ -121,8 +122,8 @@ if __name__ == '__main__':
         # TODO: verificare che il numero di classi sia corretto
         classes = 8
 
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
-    val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
+    val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
 
     if args.attention == "no":
         model = VGGFace2(pretrained=False, classes=classes).to(device)
