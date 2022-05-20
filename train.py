@@ -163,8 +163,8 @@ if __name__ == '__main__':
     # TODO - Verifica con il Load Checkpoint se bisogna continuare da una sessione di Training precedente
     checkpoint_path = "../result/{}/checkpoint".format(args.attention)+"/checkpoint.pt"
     if os.path.exists(checkpoint_path):
-        model = load_model(checkpoint_path, model, device)
-        model, optimizer, scheduler, start_epoch = load_checkpoint(checkpoint_path, model, optimizer, scheduler)
+        #model = load_model(checkpoint_path, model, device)
+        model, optimizer, scheduler, start_epoch, best_val_loss = load_checkpoint(checkpoint_path, model, optimizer, scheduler)
 
     print("===================================Start Training===================================")
 
@@ -234,7 +234,8 @@ if __name__ == '__main__':
             'epoch': e + 1,
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict()
+            'scheduler': scheduler.state_dict(),
+            'best_validation_loss': best_val_loss
         }
         # TODO Creare cartella result per il save
         save_checkpoint(checkpoint, is_best, "../result/{}/checkpoint".format(args.attention),

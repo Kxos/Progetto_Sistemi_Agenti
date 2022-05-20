@@ -15,7 +15,8 @@ def load_checkpoint(checkpoint_fpath, model, optimizer, scheduler):
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     scheduler.load_state_dict(checkpoint['scheduler'])
-    return model, optimizer, scheduler, checkpoint['epoch']
+    best_validation_loss = checkpoint['best_validation_loss']
+    return model, optimizer, scheduler, checkpoint['epoch'], best_validation_loss
 
 
 def load_model(checkpoint_path, model, device):
