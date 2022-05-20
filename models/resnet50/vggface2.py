@@ -14,7 +14,7 @@ class VGGFace2(nn.Module):
         if pretrained is True:
             # load weights
             # TODO: cambiare con i pesi di imagenet
-            self.vggface2 = model.resnet50_ft("./resnet50/model/resnet50_ft_dims_2048.pth")
+            self.vggface2 = model.resnet50_ft("./././drive/MyDrive/Progetto_Sistemi_Agenti/resnet50_ft_dims_2048.pth")
         else:
             self.vggface2 = model.resnet50_ft()
 
