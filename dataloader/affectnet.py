@@ -31,8 +31,9 @@ class AffectNet(data.Dataset):
         # TODO: leggere la label associata al file img nel CSV
         label = self.data.loc[idx, self.target]
 
-        # TODO - se target è Valenza od Arousal NON eseguire la conversione int(label)
-        label = int(label)
+        # Se target è Valenza od Arousal NON eseguire la conversione int(label)
+        if self.target == 'emotion_class':
+            label = int(label)
 
         # TODO: leggere il percorso del file img dal CSV
         img_name = self.data.loc[idx, "image_path"]
