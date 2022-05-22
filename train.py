@@ -115,12 +115,18 @@ if __name__ == '__main__':
         train_data = AffectNet(split="train", transform=train_preprocess, target = format(args.target))
         val_data = AffectNet(split="val", transform=val_preprocess, target = format(args.target))
         # TODO: verificare che il numero di classi sia corretto
-        classes = 8
+        if format(args.target) == "emotion_class":
+          classes = 8
+        else:
+          classes = 1
     else:
         train_data = AffectNet(split="train", transform=train_preprocess, target = format(args.target))
         val_data = AffectNet(split="val", transform=val_preprocess, target = format(args.target))
         # TODO: verificare che il numero di classi sia corretto
-        classes = 8
+        if format(args.target) == "emotion_class":
+          classes = 8
+        else:
+          classes = 1
 
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
     val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
