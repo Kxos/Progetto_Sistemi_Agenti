@@ -1,3 +1,4 @@
+import numpy as np
 import torch.utils.data as data
 import pandas as pd
 from PIL import Image
@@ -34,6 +35,8 @@ class AffectNet(data.Dataset):
         # Se target è Valenza od Arousal NON eseguire la conversione int(label)
         if self.target == 'emotion_class':
             label = int(label)
+        else:
+          label = np.float32(label)
 
         # TODO: leggere il percorso del file img dal CSV
         img_name = self.data.loc[idx, "image_path"]

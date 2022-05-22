@@ -22,6 +22,7 @@ class VGGFace2(nn.Module):
         # self.resnet50.pool5_7x7_s1 = nn.AdaptiveAvgPool2d((1, 1))
         self.vggface2.classifier = nn.Linear(2048, classes)
         self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
 
     def forward(self, data):
         conv1_7x7_s2 = self.vggface2.conv1_7x7_s2(data)
@@ -202,7 +203,7 @@ class VGGFace2(nn.Module):
         classifier = self.vggface2.classifier(classifier_flatten)
 
         if self.classes == 1:
-            classifier = self.sigmoid(classifier)
+            classifier = self.tanh(classifier)
         return classifier
 
     def get_mean(self):

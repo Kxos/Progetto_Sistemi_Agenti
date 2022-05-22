@@ -112,13 +112,13 @@ if __name__ == '__main__':
         # TODO: verificare che il numero di classi sia corretto
         classes = 8
     elif args.dataset == "affectnet":
-        train_data = AffectNet(split="train", transform=train_preprocess)
-        val_data = AffectNet(split="val", transform=val_preprocess)
+        train_data = AffectNet(split="train", transform=train_preprocess, target = format(args.target))
+        val_data = AffectNet(split="val", transform=val_preprocess, target = format(args.target))
         # TODO: verificare che il numero di classi sia corretto
         classes = 8
     else:
-        train_data = AffectNet(split="train", transform=train_preprocess)
-        val_data = AffectNet(split="val", transform=val_preprocess)
+        train_data = AffectNet(split="train", transform=train_preprocess, target = format(args.target))
+        val_data = AffectNet(split="val", transform=val_preprocess, target = format(args.target))
         # TODO: verificare che il numero di classi sia corretto
         classes = 8
 
@@ -182,8 +182,12 @@ if __name__ == '__main__':
         for batch_idx, batch in enumerate(train_loader):
             images, labels = batch["image"].to(device), batch["label"].to(device)
             optimizer.zero_grad()
-
             outputs = model(images)
+
+            # Check input size for squeeze
+            if outputs.shape[1] == 1:
+              outputs = outputs.squeeze(dim=1)
+
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -267,3 +271,4 @@ if __name__ == '__main__':
         print(outputTrain)
 
     print("===================================Training Finished===================================")
+
