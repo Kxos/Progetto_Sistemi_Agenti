@@ -165,7 +165,7 @@ function getFrames(){
         context.drawImage(video,0,0);
         
         $('#canvas').hide()
-	console.log(canvas.toDataURL());
+	   console.log(canvas.toDataURL('image/jpeg');
 	}
 	
 }
