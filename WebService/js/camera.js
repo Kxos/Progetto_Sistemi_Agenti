@@ -153,4 +153,26 @@ document.getElementById("analyze").addEventListener("click", function() {
             console.log("no");
         });
     }
+
 });
+
+
+
+function getFrames(){
+	if (video.srcObject != null) {
+        canvas.width = video.clientWidth;
+        canvas.height = video.clientHeight;
+        context.drawImage(video,0,0);
+        
+        $('#canvas').hide()
+	console.log(canvas.toDataURL());
+	}
+	
+}
+
+var intervalId = window.setInterval(function(){
+  /// call your function here
+getFrames();
+}, 500);
+
+
