@@ -14,13 +14,13 @@ from nni.utils import merge_parameter
 from torchvision import transforms
 from tqdm import tqdm
 
-from config import args, return_args
+#from config import args, return_args
 #from dataloader.opera7 import Opera7
+#from dataloader.demosemovogender import DemosEmovoGender
 from dataloader.emovo import Emovo
 from dataloader.demos import Demos
 from dataloader.demosemovo import DemosEmovo
 from dataloader.affectnet import AffectNet
-#from dataloader.demosemovogender import DemosEmovoGender
 from models.bam.vggface2_bam import VGGFace2BAM
 from models.cbam.vggface2_cbam import VGGFace2CBAM
 from models.resnet50.vggface2 import VGGFace2
@@ -31,7 +31,8 @@ from utility.confusion_matrix import show_confusion_matrix, get_classification_r
 
 warnings.filterwarnings('ignore')
 
-setup_seed(args.seed)
+# TODO - UTILIZZARE IL SETUP_SEED, FARE REFACTORING CON CONSAPEVOLEZZA
+#setup_seed(args.seed)
 
 logger = logging.getLogger('mnist_AutoML')
 
@@ -248,6 +249,7 @@ def main(args):
 if __name__ == '__main__':
     tuner_params = nni.get_next_parameter()
     logger.debug(tuner_params)
-    params = vars(merge_parameter(return_args, tuner_params))
+    params = vars(merge_parameter(tuner_params))
 
+    # TODO - Rimiovere la funzione di passaggio parametri, implementarla come in train.py
     main(params)
