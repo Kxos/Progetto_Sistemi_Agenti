@@ -57,25 +57,25 @@ if __name__ == '__main__':
     # TODO - Verificare se --target è inteso come --validation
     parser.add_argument("-ta", "--target", type=str, default="emotion_class",
                         choices=["emotion_class", "Valenza", "Arousal"], help='Select the type of target')
-    parser.add_argument("-ta", "--gender", type=str, default="all",
+    parser.add_argument("-ge", "--gender", type=str, default="all",
                         choices=["all", "male", "female"], help='Gender for the validation dataset')
 
     # TODO - PARAMETRIZZARE IL PERCORSO DEL BEST MODEL (ORA E' FISSO)
-    parser.add_argument("-ta", "--loadModel", type=str, default="result/no/best_model.pt",
+    parser.add_argument("-lo", "--loadModel", type=str, default="result/no/best_model.pt",
                         choices=["result/no/best_model.pt"], help='Load model for validation')
 
     args = parser.parse_args()
 
-    setup_seed(args.seed)
+    #setup_seed(args.seed)
 
     print("Starting validation with the following configuration:")
-    print("Attention module: {}".format(args['attention']))
-    print("Batch size: {}".format(args['batch_size']))
-    print("Dataset: {}".format(args['dataset']))
-    print("Gender: {}".format(args['gender']))
-    print("Validation: {}".format(args['validation']))
-    print("Load model: {}".format(args['loadModel']))
-    print("Stats: {}".format(args['stats']))
+    print("Attention module: {}".format(args.attention))
+    print("Batch size: {}".format(args.batch_size))
+    print("Dataset: {}".format(args.dataset))
+    print("Gender: {}".format(args.gender))
+    print("Validation: {}".format(args.target))
+    print("Load model: {}".format(args.loadModel))
+    print("Stats: {}".format(args.stats))
 
     # TODO - NON DOVREBBERO SERVIRE
     #print("Checkpoint model: {}".format(args['checkpoint']))
@@ -105,8 +105,8 @@ if __name__ == '__main__':
     #         os.makedirs(
     #             "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))
 
-    if not (os.path.exists(os.path.join("result", args["dataset"], args["attention"], args["gender"]))):
-        os.makedirs(os.path.join("result", args["dataset"], args["attention"], args["gender"]))
+    # if not (os.path.exists(os.path.join("result", args["dataset"], args["attention"], args["gender"]))):
+    #     os.makedirs(os.path.join("result", args["dataset"], args["attention"], args["gender"]))
 
     if torch.cuda.is_available():
         device = torch.device("cuda")
