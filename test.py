@@ -1,9 +1,11 @@
+import argparse
 import logging
 import os
 import platform
 
 import nni
 import torch
+from joblib._multiprocessing_helpers import mp
 
 if platform.system() == "Linux":
     import shutil
@@ -31,13 +33,9 @@ from utility.confusion_matrix import show_confusion_matrix, get_classification_r
 
 warnings.filterwarnings('ignore')
 
-# TODO - UTILIZZARE IL SETUP_SEED, FARE REFACTORING CON CONSAPEVOLEZZA
-#setup_seed(args.seed)
-
 logger = logging.getLogger('mnist_AutoML')
 
-
-def main(args):
+if __name__ == '__main__':
     # Args for debugging through IDE
     # args['dataset'] = 'demos'                                                          # Replace with you own dataset
     # args['gender'] = 'all'                                                             # Gender for the training dataset
@@ -47,6 +45,29 @@ def main(args):
     # args['attention'] = 'bam'                                                          # Choose your model type (Bam) / (CBam)
     # args['batch_size'] = 64                                                            # Batch size for training
 
+    parser = argparse.ArgumentParser(description="Configuration validation phase")
+    parser.add_argument("-a", "--attention", type=str, default="bam", choices=["no", "se", "bam", "cbam"],
+                        help='Chose the attention module')
+    parser.add_argument("-bs", "--batch_size", type=int, default=64, help='Batch size to use for training')
+    parser.add_argument("-d", "--dataset", type=str, default="affectnet", choices=["affectnet"],
+                        help='Chose the dataset')
+    parser.add_argument("-s", "--stats", type=str, default="imagenet", choices=["no", "imagenet"],
+                        help='Chose the mean and standard deviation')
+
+    # TODO - Verificare se --target è inteso come --validation
+    parser.add_argument("-ta", "--target", type=str, default="emotion_class",
+                        choices=["emotion_class", "Valenza", "Arousal"], help='Select the type of target')
+    parser.add_argument("-ta", "--gender", type=str, default="all",
+                        choices=["all", "male", "female"], help='Gender for the validation dataset')
+
+    # TODO - PARAMETRIZZARE IL PERCORSO DEL BEST MODEL (ORA E' FISSO)
+    parser.add_argument("-ta", "--loadModel", type=str, default="result/no/best_model.pt",
+                        choices=["result/no/best_model.pt"], help='Load model for validation')
+
+    args = parser.parse_args()
+
+    setup_seed(args.seed)
+
     print("Starting validation with the following configuration:")
     print("Attention module: {}".format(args['attention']))
     print("Batch size: {}".format(args['batch_size']))
@@ -54,38 +75,40 @@ def main(args):
     print("Gender: {}".format(args['gender']))
     print("Validation: {}".format(args['validation']))
     print("Load model: {}".format(args['loadModel']))
-    print("Checkpoint model: {}".format(args['checkpoint']))
     print("Stats: {}".format(args['stats']))
-    print("Uses Drive: {}".format(args["uses_drive"]))
-    print("With Augmentation: {}".format(args["withAugmentation"]))
-    print("Workers: {}".format(args['workers']))
 
-    if platform.system() == "Linux" and args['uses_drive']:
-        print("----------------------------")
-        print("** Google Drive Sign In **")
-        if not (os.path.exists("../../gdrive/")):
-            print(
-                "No Google Drive path detected! Please mount it before running this script or disable ""uses_drive"" flag!")
-            print("----------------------------")
-            exit(0)
-        else:
-            print("** Successfully logged in! **")
-            print("----------------------------")
+    # TODO - NON DOVREBBERO SERVIRE
+    #print("Checkpoint model: {}".format(args['checkpoint']))
+    #print("Uses Drive: {}".format(args["uses_drive"]))
+    #print("With Augmentation: {}".format(args["withAugmentation"]))
+    #print("Workers: {}".format(args['workers']))
 
-        if not (os.path.exists(
-                "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))):
-            os.makedirs(
-                "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))
-
-        if not (os.path.exists(
-                "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))):
-            os.makedirs(
-                "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))
+    # if platform.system() == "Linux" and args['uses_drive']:
+    #     print("----------------------------")
+    #     print("** Google Drive Sign In **")
+    #     if not (os.path.exists("../../gdrive/")):
+    #         print(
+    #             "No Google Drive path detected! Please mount it before running this script or disable ""uses_drive"" flag!")
+    #         print("----------------------------")
+    #         exit(0)
+    #     else:
+    #         print("** Successfully logged in! **")
+    #         print("----------------------------")
+    #
+    #     if not (os.path.exists(
+    #             "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))):
+    #         os.makedirs(
+    #             "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))
+    #
+    #     if not (os.path.exists(
+    #             "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))):
+    #         os.makedirs(
+    #             "../../gdrive/MyDrive/SysAg2022/{}/{}/{}".format(args["dataset"], args["attention"], args["gender"]))
 
     if not (os.path.exists(os.path.join("result", args["dataset"], args["attention"], args["gender"]))):
         os.makedirs(os.path.join("result", args["dataset"], args["attention"], args["gender"]))
 
-    if (torch.cuda.is_available()):
+    if torch.cuda.is_available():
         device = torch.device("cuda")
         print("===================================================")
         print('Cuda available: {}'.format(torch.cuda.is_available()))
@@ -132,15 +155,16 @@ def main(args):
             1: "Uomo",
         }
     else:
-        classes = 7
+        classes = 8
         label_mapping = {
-            0: "Disgusto",
-            1: "Gioia",
-            2: "Paura",
-            3: "Rabbia",
-            4: "Sorpresa",
-            5: "Tristezza",
-            6: "Neutrale"
+            0: "Neutrale",
+            1: "Felicita'",
+            2: "Tristezza",
+            3: "Sorpresa",
+            4: "Paura",
+            5: "Disgusto",
+            6: "Rabbia",
+            7: "Disprezzo",
         }
 
     if args["attention"] == "no":
@@ -173,7 +197,7 @@ def main(args):
     model.eval()
 
     val_loader = torch.utils.data.DataLoader(val_data, batch_size=args["batch_size"], shuffle=True,
-                                             num_workers=args["workers"])
+                                             num_workers=mp.cpu_count())
 
     y_true = []
     y_pred = []
@@ -209,47 +233,40 @@ def main(args):
     classificationReport = get_classification_report(y_true, y_pred, labels_list)
     print(classificationReport)
 
-    # Scriviamo i risultati in un file testuale
-    f = open("result/{}/{}/{}/res_validation_{}_{}_{}.txt".format(args["dataset"], args["attention"], args["gender"],
-                                                                  args["attention"], args["dataset"], args["gender"]),
-             "w")
+    # TODO - Inviare i risultati della valutazione al WebService
 
-    f.write(write)
-    f.write(delimiter)
-    f.write("Modello utilizzato: {}".format(args['loadModel']))
-    f.write(delimiter)
-    f.write("val_correct: {val_correct} || val_samples: {val_samples}".format(
-        val_correct=val_correct,
-        val_samples=len(val_data)))
-    f.write(delimiter)
-    f.write(classificationReport)
-    f.close()
+    # Scriviamo i risultati in un file testuale
+    # f = open("result/{}/{}/{}/res_validation_{}_{}_{}.txt".format(args["dataset"], args["attention"], args["gender"],
+    #                                                               args["attention"], args["dataset"], args["gender"]),
+    #          "w")
+    #
+    # f.write(write)
+    # f.write(delimiter)
+    # f.write("Modello utilizzato: {}".format(args['loadModel']))
+    # f.write(delimiter)
+    # f.write("val_correct: {val_correct} || val_samples: {val_samples}".format(
+    #     val_correct=val_correct,
+    #     val_samples=len(val_data)))
+    # f.write(delimiter)
+    # f.write(classificationReport)
+    # f.close()
 
     show_confusion_matrix(y_true, y_pred, labels_list,
                           "result/{}/{}/{}/".format(args["dataset"], args["attention"], args["gender"]))
 
-    if platform.system() == "Linux" and args['uses_drive']:
-        shutil.copy(
-            "result/{}/{}/{}/res_validation_{}_{}_{}.txt".format(args["dataset"], args["attention"], args["gender"],
-                                                                 args["attention"], args["dataset"], args["gender"]),
-            "../../gdrive/MyDrive/SysAg2022/{}/{}/{}/res_validation_{}_{}_{}.txt".format(args["dataset"],
-                                                                                         args["attention"],
-                                                                                         args["gender"],
-                                                                                         args["attention"],
-                                                                                         args["dataset"],
-                                                                                         args["gender"]))
-        shutil.copy("result/{}/{}/{}/confusion_matrix.png".format(args["dataset"], args["attention"], args["gender"]),
-                    "../../gdrive/MyDrive/SysAg2022/{}/{}/{}/confusion_matrix.png".format(args["dataset"],
-                                                                                          args["attention"],
-                                                                                          args["gender"]))
+    # if platform.system() == "Linux" and args['uses_drive']:
+    #     shutil.copy(
+    #         "result/{}/{}/{}/res_validation_{}_{}_{}.txt".format(args["dataset"], args["attention"], args["gender"],
+    #                                                              args["attention"], args["dataset"], args["gender"]),
+    #         "../../gdrive/MyDrive/SysAg2022/{}/{}/{}/res_validation_{}_{}_{}.txt".format(args["dataset"],
+    #                                                                                      args["attention"],
+    #                                                                                      args["gender"],
+    #                                                                                      args["attention"],
+    #                                                                                      args["dataset"],
+    #                                                                                      args["gender"]))
+    #     shutil.copy("result/{}/{}/{}/confusion_matrix.png".format(args["dataset"], args["attention"], args["gender"]),
+    #                 "../../gdrive/MyDrive/SysAg2022/{}/{}/{}/confusion_matrix.png".format(args["dataset"],
+    #                                                                                       args["attention"],
+    #                                                                                       args["gender"]))
 
     print("===================================Testing Finished===================================")
-
-
-if __name__ == '__main__':
-    tuner_params = nni.get_next_parameter()
-    logger.debug(tuner_params)
-    params = vars(merge_parameter(tuner_params))
-
-    # TODO - Rimiovere la funzione di passaggio parametri, implementarla come in train.py
-    main(params)
