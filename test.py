@@ -40,7 +40,7 @@ warnings.filterwarnings('ignore')
 logger = logging.getLogger('mnist_AutoML')
 
 
-def evaluate(imageURL):
+def loadModels():
     # Args for debugging through IDE
     # args['dataset'] = 'demos'                                                          # Replace with you own dataset
     # args['gender'] = 'all'                                                             # Gender for the training dataset
@@ -120,125 +120,140 @@ def evaluate(imageURL):
         # "demosemovogender": DemosEmovoGender
     }
 
-    dataset = args.dataset if args.dataset in validation_classes.keys() else "affectnet"
-    val_data = validation_classes[dataset](split="val", transform=val_preprocess)
+    # dataset = args.dataset if args.dataset in validation_classes.keys() else "affectnet"
+    # val_data = validation_classes[dataset](split="val", transform=val_preprocess)
 
-    targetList = ["emotion_class", "Valenza", "Arousal"]
+    # Carica il modello di emotion_class
+    classes = 8
 
+    if args.attention == "no":
+        model = VGGFace2(pretrained=False, classes=classes).to(device)
+    elif args.attention == "se":
+        model = VGGFace2SE(classes=classes).to(device)
+    elif args.attention == "bam":
+        model = VGGFace2BAM(classes=classes).to(device)
+    elif args.attention == "cbam":
+        model = VGGFace2CBAM(classes=classes).to(device)
+    else:
+        model = VGGFace2(pretrained=False, classes=classes).to(device)
+
+    pathModel = f"Modelli trainati/emotion_class/result/{args.attention}/best_model.pt"
+    model_emotion_class = load_model(pathModel, model, device)
+
+    # Carica i modelli di Valenza ed Arousal
+    classes = 1
+
+    if args.attention == "no":
+        model = VGGFace2(pretrained=False, classes=classes).to(device)
+    elif args.attention == "se":
+        model = VGGFace2SE(classes=classes).to(device)
+    elif args.attention == "bam":
+        model = VGGFace2BAM(classes=classes).to(device)
+    elif args.attention == "cbam":
+        model = VGGFace2CBAM(classes=classes).to(device)
+    else:
+        model = VGGFace2(pretrained=False, classes=classes).to(device)
+
+    pathModel = f"Modelli trainati/Valenza/result/{args.attention}/best_model.pt"
+    model_Valenza = load_model(pathModel, model, device)
+
+    pathModel = f"Modelli trainati/Arousal/result/{args.attention}/best_model.pt"
+    model_Arousal = load_model(pathModel, model, device)
+    # print("Custom model loaded successfully")
+    print("-------------------------------------------------------")
+
+    return val_preprocess, device, model_emotion_class, model_Valenza, model_Arousal
+
+
+# Valida i 3 modelli restituendo il messaggio_di_ritorno
+def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, val_preprocess, device):
     messaggio_di_ritorno = {
         "emotion_class": None,
         "Valenza": None,
         "Arousal": None,
     }
 
-    for target in targetList:
+    label_mapping = {
+        0: "Neutrale",
+        1: "Felicita'",
+        2: "Tristezza",
+        3: "Sorpresa",
+        4: "Paura",
+        5: "Disgusto",
+        6: "Rabbia",
+        7: "Disprezzo",
+    }
 
-        if target == "gender":
-            classes = 2
-            label_mapping = {
-                0: "Donna",
-                1: "Uomo",
-            }
-        elif target == "emotion_class":
-            classes = 8
-            label_mapping = {
-                0: "Neutrale",
-                1: "Felicita'",
-                2: "Tristezza",
-                3: "Sorpresa",
-                4: "Paura",
-                5: "Disgusto",
-                6: "Rabbia",
-                7: "Disprezzo",
-            }
-        else:
-            classes = 1
+    # validate the models
+    model_emotion_class.eval()
+    model_Valenza.eval()
+    model_Arousal.eval()
 
-        if args.attention == "no":
-            model = VGGFace2(pretrained=False, classes=classes).to(device)
-        elif args.attention == "se":
-            model = VGGFace2SE(classes=classes).to(device)
-        elif args.attention == "bam":
-            model = VGGFace2BAM(classes=classes).to(device)
-        elif args.attention == "cbam":
-            model = VGGFace2CBAM(classes=classes).to(device)
-        else:
-            model = VGGFace2(pretrained=False, classes=classes).to(device)
+    # val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
 
-        # Carica tutti e tre i best_model di emotion_class, Valenza ed Arousal in base al target
-        pathModel = f"Modelli trainati/{target}/result/{args.attention}/best_model.pt"
-        model = load_model(pathModel, model, device)
-        # print("Custom model loaded successfully")
-        print("-------------------------------------------------------")
+    print("\nStarting validation...")
+    urllib.request.urlretrieve(imageURL, "image.jpg")
 
-        # TODO - Dividere il caricamento del modello dall'operazione di valutazione nel web_server
+    # Crop the image to obtain the face
+    images = cv2.imread("image.jpg")
+    if images is None:
+        return None
+    gray = cv2.cvtColor(images, cv2.COLOR_BGR2GRAY)
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    if len(faces) == 0:
+        return None
+    x, y, w, h = faces[0]
+    images = cv2.resize(images[y:y + h, x:x + w], (224, 224), interpolation=cv2.INTER_LANCZOS4)
 
-        # validate the model
-        model.eval()
+    images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB)
+    images = Image.fromarray(images)
+    images = val_preprocess(images)
+    images = images.unsqueeze(0)
+    images = images.to(device)
+    # labels = batch["label"].to(device)
 
-        # val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
+    with torch.no_grad():
+        val_outputs_emo_class = model_emotion_class(images)
+        val_outputs_Valenza = model_Valenza(images)
+        val_outputs_Arousal = model_Arousal(images)
+        # print(target)
 
-        print("\nStarting validation...")
-        urllib.request.urlretrieve(imageURL, "image.jpg")
+        # Valori Valenza ed Arousal
+        messaggio_di_ritorno["Valenza"] = float(val_outputs_Valenza.data.cpu().numpy()[0][0])
+        messaggio_di_ritorno["Arousal"] = float(val_outputs_Arousal.data.cpu().numpy()[0][0])
+        # output: Valenza od Arousal a seconda del Target impostato
+        # print(target, ": ", val_outputs.data.cpu().numpy()[0][0])
 
-        # Crop the image to obtain the face
-        images = cv2.imread("image.jpg")
-        if images is None:
-            return None
-        gray = cv2.cvtColor(images, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
-        faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-        if len(faces) == 0:
-            return None
-        x, y, w, h = faces[0]
-        images = cv2.resize(images[y:y + h, x:x + w], (224, 224), interpolation=cv2.INTER_LANCZOS4)
+        messaggio_di_ritorno["emotion_class"] = label_mapping[val_outputs_emo_class.data.cpu().numpy().argmax()]
+        # output: emotion_class
+        # print(val_outputs.data.cpu().numpy().argmax())
 
-        images = cv2.cvtColor(images, cv2.COLOR_BGR2RGB)
-        images = Image.fromarray(images)
-        images = val_preprocess(images)
-        images = images.unsqueeze(0)
-        images = images.to(device)
-        # labels = batch["label"].to(device)
+        # _, val_preds = torch.max(val_outputs, 1)
+        # val_correct += torch.sum(val_preds == labels.data)
 
-        with torch.no_grad():
-            val_outputs = model(images)
-            #print(target)
+        # y_true.extend(labels.detach().cpu().numpy().tolist())
+        # y_pred.extend(val_preds.detach().cpu().numpy().tolist())
 
-            if target != "emotion_class":
-                messaggio_di_ritorno[target] = float(val_outputs.data.cpu().numpy()[0][0])
-                # output: Valenza od Arousal a seconda del Target impostato
-                # print(target, ": ", val_outputs.data.cpu().numpy()[0][0])
+    # if target == "emotion_class":
+    #     for i in range(len(label_mapping)):
+    #         labels_list.append(label_mapping[i])
 
-            if target == "emotion_class":
-                messaggio_di_ritorno[target] = label_mapping[val_outputs.data.cpu().numpy().argmax()]
-                # output: emotion_class
-                # print(val_outputs.data.cpu().numpy().argmax())
+    # print("Num correct: {}".format(val_correct))
+    # print("Num samples: {}".format(len(val_data)))
 
-            _, val_preds = torch.max(val_outputs, 1)
-            # val_correct += torch.sum(val_preds == labels.data)
+    # val_acc = (val_correct.double() / len(val_data)) * 100
 
-            # y_true.extend(labels.detach().cpu().numpy().tolist())
-            # y_pred.extend(val_preds.detach().cpu().numpy().tolist())
+    delimiter = "\n===================================================================================\n"
 
-        # if target == "emotion_class":
-        #     for i in range(len(label_mapping)):
-        #         labels_list.append(label_mapping[i])
+    # write = F'Accuracy of the network on the test images: {val_preds:.3f}%'
+    # print(F'\n{write}')
 
-        # print("Num correct: {}".format(val_correct))
-        # print("Num samples: {}".format(len(val_data)))
+    # classificationReport = get_classification_report(y_true, y_pred, labels_list)
+    # print(classificationReport)
 
-        # val_acc = (val_correct.double() / len(val_data)) * 100
-
-        delimiter = "\n===================================================================================\n"
-
-        # write = F'Accuracy of the network on the test images: {val_preds:.3f}%'
-        # print(F'\n{write}')
-
-        # classificationReport = get_classification_report(y_true, y_pred, labels_list)
-        # print(classificationReport)
-
-        # show_confusion_matrix(y_true, y_pred, labels_list,
-        # "result/{}/{}/{}/".format(args.dataset, args.attention, args.gender))
+    # show_confusion_matrix(y_true, y_pred, labels_list,
+    # "result/{}/{}/{}/".format(args.dataset, args.attention, args.gender))
 
     print("===================================Validation Finished===================================")
 
