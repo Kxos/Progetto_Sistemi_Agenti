@@ -15,7 +15,7 @@ val_preprocess, device, model_emotion_class, model_Valenza, model_Arousal = load
 
 @socketio.on('message')
 def handle_message(data):
-    print('received message: ', data.get('data'))
+    #print('received message: ', data.get('data'))
 
     # messaggio_di_ritorno = {
     #     "emotion_class": 0,
