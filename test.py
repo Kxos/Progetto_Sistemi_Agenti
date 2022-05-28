@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import os
 import platform
@@ -258,4 +259,5 @@ def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, v
     print("===================================Validation Finished===================================")
 
     # TODO - Effettuare l'invio dei valori di Arousal, Valenza, emotion_class al WebService
-    return messaggio_di_ritorno
+    messaggio_di_ritorno_json = json.dumps(messaggio_di_ritorno)
+    return messaggio_di_ritorno_json
