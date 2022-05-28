@@ -178,7 +178,10 @@ function getFrames(){
        // Riceve i valori della Validazione
        socket.on("message", (data) => {
            console.log(data)
+           // Stampa sull'html i valori della Validazione
+           printResults(data);
       });
+    
 	}
 	
 }
@@ -188,4 +191,14 @@ var intervalId = window.setInterval(function(){
 getFrames();
 }, 5000);
 
+function printResults(inputResults) {
+    var results = inputResults;
 
+    const obj = JSON.parse(results, function (key, value) {
+        return value;
+      });
+            
+    document.getElementById("results").innerHTML = "<strong>Emozione:</strong> " + obj.emotion_class + "<br><strong>Valenza:</strong> " + obj.Valenza + "<br><strong>Arousal:</strong> " + obj.Arousal;
+}
+
+    
