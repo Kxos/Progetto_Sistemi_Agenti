@@ -189,7 +189,7 @@ function getFrames(){
 var intervalId = window.setInterval(function(){
   /// call your function here
 getFrames();
-}, 2500);
+}, 3000);
 
 function printResults(inputResults) {
     var results = inputResults;
