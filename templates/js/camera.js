@@ -165,7 +165,20 @@ function getFrames(){
         context.drawImage(video,0,0);
         
         $('#canvas').hide()
-	   console.log(canvas.toDataURL('image/jpeg'));
+        // canvas.toDataURL('image/jpeg') E' il singolo Frame
+	    // console.log(canvas.toDataURL('image/jpeg'));
+
+        // Invia il Frame al Modello
+        var socket = io('http://127.0.0.1:5000');
+            socket.on('connect', function() {
+                socket.emit('message', {data: canvas.toDataURL('image/jpeg')});
+            });
+
+
+       // Riceve i valori della Validazione
+       socket.on("message", (data) => {
+           console.log(data)
+      });
 	}
 	
 }
@@ -173,6 +186,6 @@ function getFrames(){
 var intervalId = window.setInterval(function(){
   /// call your function here
 getFrames();
-}, 500);
+}, 5000);
 
 
