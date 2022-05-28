@@ -141,7 +141,7 @@ def loadModels():
     pathModel = f"Modelli trainati/emotion_class/result/{args.attention}/best_model.pt"
     model_emotion_class = load_model(pathModel, model, device)
 
-    # Carica i modelli di Valenza ed Arousal
+    # Carica il modello di Valenza
     classes = 1
 
     if args.attention == "no":
@@ -157,6 +157,20 @@ def loadModels():
 
     pathModel = f"Modelli trainati/Valenza/result/{args.attention}/best_model.pt"
     model_Valenza = load_model(pathModel, model, device)
+
+    # Carica il modello di Arousal
+    classes = 1
+
+    if args.attention == "no":
+        model = VGGFace2(pretrained=False, classes=classes).to(device)
+    elif args.attention == "se":
+        model = VGGFace2SE(classes=classes).to(device)
+    elif args.attention == "bam":
+        model = VGGFace2BAM(classes=classes).to(device)
+    elif args.attention == "cbam":
+        model = VGGFace2CBAM(classes=classes).to(device)
+    else:
+        model = VGGFace2(pretrained=False, classes=classes).to(device)
 
     pathModel = f"Modelli trainati/Arousal/result/{args.attention}/best_model.pt"
     model_Arousal = load_model(pathModel, model, device)
