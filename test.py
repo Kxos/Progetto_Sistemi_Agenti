@@ -167,6 +167,7 @@ def loadModels():
 
 # Valida i 3 modelli restituendo il messaggio_di_ritorno
 def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, val_preprocess, device):
+
     messaggio_di_ritorno = {
         "emotion_class": None,
         "Valenza": None,
@@ -211,17 +212,18 @@ def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, v
     images = val_preprocess(images)
     images = images.unsqueeze(0)
     images = images.to(device)
-    # labels = batch["label"].to(device)
 
     with torch.no_grad():
         val_outputs_emo_class = model_emotion_class(images)
         val_outputs_Valenza = model_Valenza(images)
         val_outputs_Arousal = model_Arousal(images)
-        # print(target)
 
         # Valori Valenza ed Arousal
         messaggio_di_ritorno["Valenza"] = float(val_outputs_Valenza.data.cpu().numpy()[0][0])
+        print(messaggio_di_ritorno["Valenza"])
         messaggio_di_ritorno["Arousal"] = float(val_outputs_Arousal.data.cpu().numpy()[0][0])
+        print(messaggio_di_ritorno["Arousal"])
+
         # output: Valenza od Arousal a seconda del Target impostato
         # print(target, ": ", val_outputs.data.cpu().numpy()[0][0])
 
