@@ -6,12 +6,16 @@ import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins='http://localhost')
+socketio = SocketIO(app, cors_allowed_origins='http://localhost:5000')
 
 log = logging.getLogger('werkzeug')
 log.disabled = True
 
 val_preprocess, device, model_emotion_class, model_Valenza, model_Arousal = loadModels()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @socketio.on('message')
 def handle_message(data):
