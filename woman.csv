@@ -1,0 +1,11 @@
+path,emotion_class,Valenza,Arousal
+/content/train_set_images/2.jpg,0,0.174603,0.00793651
+/content/train_set_images/3.jpg,1,0.153401,0.0388903
+/content/train_set_images/18.jpg,6,-0.373016,0.81746
+/content/train_set_images/22.jpg,1,0.492063,0.111111
+/content/train_set_images/23.jpg,1,0.531746,-0.0634921
+/content/train_set_images/32.jpg,0,-0.00793651,0.015873
+/content/train_set_images/34.jpg,0,0,-0.00431332
+/content/train_set_images/36.jpg,1,0.777047,0.328751
+/content/train_set_images/46.jpg,1,0.510957,0.0842815
+/content/train_set_images/49.jpg,3,0.32377,0.527994
