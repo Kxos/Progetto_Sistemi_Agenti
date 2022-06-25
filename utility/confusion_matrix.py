@@ -27,22 +27,27 @@ def get_classification_report(y_true, y_pred, labels):
 
 
 # ================ USAGE ================ #
-#
-# y_true = [0,1,2,3,4,5,6]
-# y_pred = [6,5,4,3,2,1,0]
-#
-# label_mapping = {0: "Surprise",
-#                      1: "Fear",
-#                      2: "Disgust",
-#                      3: "Happiness",
-#                      4: "Sadness",
-#                      5: "Anger",
-#                      6: "Neutral"}
-#
-# labels_list = []
-# for i in range(len(label_mapping)):
-#     labels_list.append(label_mapping[i])
-#
-# show_confusion_matrix(y_true, y_pred, labels_list)
-# print(get_classification_report(y_true, y_pred, labels_list))
+
+path = "C:/result/"
+
+y_true = [0,1,2,3,4,5,6,7]
+y_pred = [7,6,5,4,3,2,1,0]
+
+label_mapping = {
+        0: "Neutrale",
+        1: "Felicita'",
+        2: "Tristezza",
+        3: "Sorpresa",
+        4: "Paura",
+        5: "Disgusto",
+        6: "Rabbia",
+        7: "Disprezzo",
+    }
+
+labels_list = []
+for i in range(len(label_mapping)):
+    labels_list.append(label_mapping[i])
+
+show_confusion_matrix(y_true, y_pred, labels_list, path)
+print(get_classification_report(y_true, y_pred, labels_list))
 
