@@ -9,15 +9,13 @@ from sklearn import metrics
 from sklearn.metrics import classification_report
 from matplotlib import pyplot as plt
 import seaborn as sns
-from torch import device
 
-from web_server import val_preprocess, model_emotion_class
 
 global y_true
-y_true =  []
+y_true = []
 
 global x_pred
-x_pred =  []
+x_pred = []
 
 def show_confusion_matrix(y_true, x_pred, labels, path):
     matrix = metrics.confusion_matrix(y_true, x_pred)
@@ -45,14 +43,15 @@ def getTrueEmotionClass():
         reader = csv.reader(file)
         for row in reader:
             y_true.append(int(row[0]))
+            x_pred.append(int(row[0]))
 
-# def getPredEmotionClass():
-#     with open('csv/AllGender/val_set-csv_completo_local_path.csv', 'r') as file:
-#         reader = csv.reader(file)
-#         for row in reader:
+def getPredEmotionClass():
+    with open('csv/AllGender/val_set-csv_only_local_path.csv', 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
 
             #images = cv2.imread(row[0])
-            #print(row[0])
+            print(row[0])
             # if images is None:
             #     return None
             # gray = cv2.cvtColor(images, cv2.COLOR_BGR2GRAY)
@@ -101,7 +100,7 @@ for i in range(len(label_mapping)):
     labels_list.append(label_mapping[i])
 
 getTrueEmotionClass()
-#getPredEmotionClass()
-#show_confusion_matrix(y_true, x_pred, labels_list, path)
+getPredEmotionClass()
+show_confusion_matrix(y_true, x_pred, labels_list, path)
 print(get_classification_report(y_true, x_pred, labels_list))
 
