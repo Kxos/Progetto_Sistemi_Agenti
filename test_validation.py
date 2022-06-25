@@ -30,7 +30,6 @@ from models.resnet50.vggface2 import VGGFace2
 from models.se.vggface2_se import VGGFace2SE
 from utility.checkpoint import load_model
 from utility.utility import setup_seed
-from utility.confusion_matrix import show_confusion_matrix, get_classification_report, y_true, labels_list, path, x_pred
 from PIL import Image
 import urllib.request
 from io import BytesIO
@@ -207,10 +206,10 @@ def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, v
     # val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch_size, shuffle=True, num_workers=mp.cpu_count())
 
     print("\nStarting validation...")
-    urllib.request.urlretrieve(imageURL, "image.jpg")
+    #urllib.request.urlretrieve(imageURL, "image.jpg")
 
     # Crop the image to obtain the face
-    images = cv2.imread("image.jpg")
+    images = cv2.imread(imageURL)
     if images is None:
         return None
     gray = cv2.cvtColor(images, cv2.COLOR_BGR2GRAY)
@@ -267,10 +266,10 @@ def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, v
     # classificationReport = get_classification_report(y_true, y_pred, labels_list)
     # print(classificationReport)
 
-    show_confusion_matrix(y_true, x_pred, labels_list, path)
+    #show_confusion_matrix(y_true, x_pred, labels_list, path)
 
     print("===================================Validation Finished===================================")
 
     # TODO - Effettuare l'invio dei valori di Arousal, Valenza, emotion_class al WebService
-    messaggio_di_ritorno_json = json.dumps(messaggio_di_ritorno)
-    return messaggio_di_ritorno_json
+    #messaggio_di_ritorno_json = json.dumps(messaggio_di_ritorno)
+    return messaggio_di_ritorno

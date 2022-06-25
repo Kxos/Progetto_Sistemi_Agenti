@@ -8,6 +8,8 @@ import nni
 import torch
 from joblib._multiprocessing_helpers import mp
 
+from utility.confusion_matrix import show_confusion_matrix, y_true, x_pred, labels_list, path
+
 if platform.system() == "Linux":
     import shutil
 
@@ -30,7 +32,6 @@ from models.resnet50.vggface2 import VGGFace2
 from models.se.vggface2_se import VGGFace2SE
 from utility.checkpoint import load_model
 from utility.utility import setup_seed
-from utility.confusion_matrix import show_confusion_matrix, get_classification_report, y_true, labels_list, path, x_pred
 from PIL import Image
 import urllib.request
 from io import BytesIO
@@ -267,7 +268,7 @@ def evaluateFrame(model_emotion_class, model_Valenza, model_Arousal, imageURL, v
     # classificationReport = get_classification_report(y_true, y_pred, labels_list)
     # print(classificationReport)
 
-    show_confusion_matrix(y_true, x_pred, labels_list, path)
+    #show_confusion_matrix(y_true, x_pred, labels_list, path)
 
     print("===================================Validation Finished===================================")
 
